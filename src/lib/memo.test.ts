@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Memo } from '../data/types';
-import { memoLabel, nextSeq, splitRecentMemos } from './memo';
+import { memoLabel, memoPreview, nextSeq, splitRecentMemos } from './memo';
 
 function memo(id: string, date: string, seq: number): Memo {
-  return { id, date, seq, title: '', body: '', createdAt: 0, updatedAt: 0 };
+  return { id, date, seq, body: '', createdAt: 0, updatedAt: 0 };
 }
 
 describe('nextSeq', () => {
@@ -39,5 +39,12 @@ describe('splitRecentMemos', () => {
 describe('memoLabel', () => {
   it('日付と連番を表示する', () => {
     expect(memoLabel({ date: '2026-10-30', seq: 2 })).toBe('2026/10/30(金) #2');
+  });
+});
+
+describe('memoPreview', () => {
+  it('空行を飛ばして本文の 1 行目を返す', () => {
+    expect(memoPreview('\n  \n 議題について \n次の行')).toBe('議題について');
+    expect(memoPreview('')).toBe('');
   });
 });

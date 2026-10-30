@@ -280,8 +280,8 @@ textarea {
 
 /* メモ一覧 */
 .memo-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
@@ -304,20 +304,13 @@ textarea {
   font-weight: 600;
 }
 
-.memo-card-title {
-  font-weight: 700;
-}
-
 .memo-card-body {
   margin: 0;
-  font-size: 0.9rem;
-  color: var(--color-muted);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 .memo-card-tasks {
-  margin-top: auto;
   font-size: 0.8rem;
   color: var(--color-muted);
 }
@@ -342,6 +335,14 @@ textarea {
 .memo-link-date {
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+}
+
+.memo-link-preview {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
 }
 
 /* メモ編集 */
@@ -374,10 +375,20 @@ textarea {
   margin: 0;
 }
 
-.form-actions {
+.form-header {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-header h2 {
+  margin: 0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .save-status {

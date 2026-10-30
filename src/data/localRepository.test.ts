@@ -9,26 +9,26 @@ function createRepo(uid = 'user-1', storage = new MemoryStorage()) {
 describe('LocalRepository', () => {
   it('同じ日付のメモを作成すると連番を付ける', async () => {
     const repo = createRepo();
-    const first = await repo.createMemo({ date: '2026-10-30', title: 'A', body: '' });
-    const second = await repo.createMemo({ date: '2026-10-30', title: 'B', body: '' });
-    const other = await repo.createMemo({ date: '2026-10-31', title: 'C', body: '' });
+    const first = await repo.createMemo({ date: '2026-10-30', body: 'A' });
+    const second = await repo.createMemo({ date: '2026-10-30', body: 'B' });
+    const other = await repo.createMemo({ date: '2026-10-31', body: 'C' });
     expect([first.seq, second.seq, other.seq]).toEqual([1, 2, 1]);
   });
 
   it('日付を変更すると変更先の日付で連番を付け直す', async () => {
     const repo = createRepo();
-    await repo.createMemo({ date: '2026-10-30', title: '', body: '' });
-    const memo = await repo.createMemo({ date: '2026-10-31', title: '', body: '' });
-    const updated = await repo.updateMemo(memo.id, { date: '2026-10-30', title: '', body: '' });
+    await repo.createMemo({ date: '2026-10-30', body: '' });
+    const memo = await repo.createMemo({ date: '2026-10-31', body: '' });
+    const updated = await repo.updateMemo(memo.id, { date: '2026-10-30', body: '' });
     expect(updated.seq).toBe(2);
 
-    const unchanged = await repo.updateMemo(memo.id, { date: '2026-10-30', title: '変更', body: '' });
+    const unchanged = await repo.updateMemo(memo.id, { date: '2026-10-30', body: '変更' });
     expect(unchanged.seq).toBe(2);
   });
 
   it('メモを削除すると紐づくタスクも削除する', async () => {
     const repo = createRepo();
-    const memo = await repo.createMemo({ date: '2026-10-30', title: '', body: '' });
+    const memo = await repo.createMemo({ date: '2026-10-30', body: '' });
     await repo.createTask({ title: 'メモのタスク', memoId: memo.id });
     await repo.createTask({ title: 'ダッシュボードのタスク', memoId: null });
     await repo.deleteMemo(memo.id);

@@ -2,9 +2,7 @@ import { Link } from 'react-router-dom';
 import { TaskForm } from '../components/TaskForm';
 import { TaskList } from '../components/TaskList';
 import { useData } from '../data/DataContext';
-import { memoLabel, splitRecentMemos } from '../lib/memo';
-
-const EXCERPT_LENGTH = 120;
+import { memoLabel, memoPreview, splitRecentMemos } from '../lib/memo';
 
 export function DashboardPage() {
   const { repo, memos, tasks, loading } = useData();
@@ -45,10 +43,7 @@ export function DashboardPage() {
               return (
                 <Link key={memo.id} to={`/memos/${memo.id}`} className="card memo-card">
                   <div className="memo-card-date">{memoLabel(memo)}</div>
-                  <div className="memo-card-title">{memo.title || '（タイトルなし）'}</div>
-                  <p className="memo-card-body">
-                    {memo.body.length > EXCERPT_LENGTH ? `${memo.body.slice(0, EXCERPT_LENGTH)}…` : memo.body}
-                  </p>
+                  <p className="memo-card-body">{memo.body || '（本文なし）'}</p>
                   {memoTasks.length > 0 && (
                     <div className="memo-card-tasks">
                       タスク 残り {remaining} / {memoTasks.length}
@@ -69,7 +64,7 @@ export function DashboardPage() {
               <li key={memo.id}>
                 <Link to={`/memos/${memo.id}`}>
                   <span className="memo-link-date">{memoLabel(memo)}</span>
-                  <span>{memo.title || '（タイトルなし）'}</span>
+                  <span className="memo-link-preview">{memoPreview(memo.body) || '（本文なし）'}</span>
                 </Link>
               </li>
             ))}

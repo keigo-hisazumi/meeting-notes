@@ -33,7 +33,6 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
   const location = useLocation();
   const { repo, memos, tasks } = useData();
   const [date, setDate] = useState(memo?.date ?? todayString());
-  const [title, setTitle] = useState(memo?.title ?? '');
   const [body, setBody] = useState(memo?.body ?? '');
   const [draftTasks, setDraftTasks] = useState<TaskItem[]>([]);
   // 新規作成から保存して遷移してきた場合は保存済みの表示にする
@@ -42,7 +41,7 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
 
   const isNew = memo === null;
   const dateChanged = memo !== null && memo.date !== date;
-  const dirty = isNew || dateChanged || memo.title !== title || memo.body !== body;
+  const dirty = isNew || dateChanged || memo.body !== body;
   const seq = !isNew && !dateChanged ? memo.seq : nextSeq(memos, date, memo?.id);
   const sameDateCount = memos.filter((m) => m.date === date && m.id !== memo?.id).length;
 
@@ -71,7 +70,7 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
       setError('日付を正しく入力してください');
       return;
     }
-    const input = { date, title: title.trim(), body };
+    const input = { date, body };
     if (isNew) {
       const created = await repo.createMemo(input);
       for (const task of draftTasks) {
@@ -80,7 +79,6 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
       navigate(`/memos/${created.id}`, { replace: true, state: { saved: true } });
     } else {
       await repo.updateMemo(memo.id, input);
-      setTitle(input.title);
       setStatus('保存しました');
     }
   };
@@ -99,7 +97,15 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
       </div>
 
       <form className="card" onSubmit={handleSave}>
-        <h2>{isNew ? 'メモを作成' : 'メモを編集'}</h2>
+        <div className="form-header">
+          <h2>{isNew ? 'メモを作成' : 'メモを編集'}</h2>
+          <span className="save-status" aria-live="polite">
+            {dirty ? (isNew ? '' : '未保存の変更があります') : status}
+          </span>
+          <button type="submit" className="button button-primary" disabled={!dirty}>
+            保存
+          </button>
+        </div>
         <div className="memo-meta">
           <label className="field">
             <span>日付</span>
@@ -121,18 +127,6 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
           </div>
         </div>
         <label className="field">
-          <span>タイトル（任意）</span>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              setStatus('');
-            }}
-            placeholder="例: 〇〇社 定例打ち合わせ"
-          />
-        </label>
-        <label className="field">
           <span>メモ</span>
           <textarea
             value={body}
@@ -149,19 +143,13 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
             {error}
           </p>
         )}
-        <div className="form-actions">
-          {!isNew && (
+        {!isNew && (
+          <div className="form-actions">
             <button type="button" className="button button-danger" onClick={() => void handleDelete()}>
               メモを削除
             </button>
-          )}
-          <span className="save-status" aria-live="polite">
-            {dirty ? (isNew ? '' : '未保存の変更があります') : status}
-          </span>
-          <button type="submit" className="button button-primary" disabled={!dirty}>
-            保存
-          </button>
-        </div>
+          </div>
+        )}
       </form>
 
       <section className="card">

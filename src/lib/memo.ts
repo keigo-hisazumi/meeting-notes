@@ -21,6 +21,11 @@ export function splitRecentMemos(memos: Memo[], count = 3): { recent: Memo[]; ol
   return { recent: sorted.slice(0, count), older: sorted.slice(count) };
 }
 
+/** リンク一覧に表示する本文の 1 行目（空行は飛ばす） */
+export function memoPreview(body: string): string {
+  return body.split('\n').find((line) => line.trim() !== '')?.trim() ?? '';
+}
+
 /** 一覧などで表示するメモの見出し（例: 2026/10/30(金) #2） */
 export function memoLabel(memo: Pick<Memo, 'date' | 'seq'>): string {
   return `${formatDate(memo.date)} #${memo.seq}`;

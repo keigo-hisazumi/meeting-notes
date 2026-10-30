@@ -39,7 +39,6 @@ export class LocalRepository implements Repository {
       id: generateId(),
       date: input.date,
       seq: nextSeq(memos, input.date),
-      title: input.title,
       body: input.body,
       createdAt: timestamp,
       updatedAt: timestamp,

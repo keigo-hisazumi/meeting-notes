@@ -5,8 +5,6 @@ export interface Memo {
   date: string;
   /** 同じ日付内での連番（1 始まり） */
   seq: number;
-  /** 打ち合わせ名などの任意のタイトル */
-  title: string;
   /** メモ本文（プレーンテキスト） */
   body: string;
   createdAt: number;
@@ -25,7 +23,6 @@ export interface Task {
 
 export interface MemoInput {
   date: string;
-  title: string;
   body: string;
 }
 
