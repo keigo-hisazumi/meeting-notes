@@ -1,76 +1,92 @@
-# Template
+# 打ち合わせメモ
 
-このリポジトリは新しいプロジェクト用のテンプレートです。AI アシスタント向けの指示書、Issue / PR テンプレート、CI/CD の雛形、エディタ設定、各種ドット・ガバナンスファイルを含みます。
+仕事の打ち合わせのメモを日付ごとに記録し、打ち合わせで出たタスクとダッシュボードで追加したタスクをまとめて管理する Web アプリです。現在はデータをブラウザ内（localStorage）に保存し、将来 Firebase に移行する想定です。
 
-## AI アシスタント運用方針
+## 主な機能
 
-このテンプレートは **Claude をメインの AI アシスタント** として利用し、**GitHub Copilot をサブツール** として併用するワークフローを想定しています。開発ルールの **正本は [`AGENTS.md`](./AGENTS.md)** で、各ツール向けの指示書はそれを参照する構成です。
-
-| ツール | ファイル | 役割 |
-| --- | --- | --- |
-| 汎用 AI エージェント | [`AGENTS.md`](./AGENTS.md) | **正本**。すべてのルールはここに集約 |
-| Claude Code | [`CLAUDE.md`](./CLAUDE.md) | `AGENTS.md` を参照 |
-
-## 含まれるもの
-
-### AI 向け指示書
-
-- `AGENTS.md` — **正本**（汎用 AI エージェント向け）
-- `CLAUDE.md` — Claude Code 向け（`AGENTS.md` を参照）
-
-### Issue / PR
-
-- `.github/ISSUE_TEMPLATE/` — バグ報告 / 機能要望 / 質問テンプレート
-- `.github/PULL_REQUEST_TEMPLATE.md` — PR テンプレート（日本語）
-- `.github/CODEOWNERS` — レビュー自動アサイン
-- `CONTRIBUTING.md` / `SECURITY.md` — 貢献ガイドとセキュリティポリシー
-
-### CI/CD
-
-- `.github/workflows/ci.yml` — PR 時の lint / typecheck / test / build（`package.json` がある場合のみ実行）
-- `.github/workflows/actionlint.yml` — workflow 自体の Lint（公式バイナリをバージョン固定で実行。`.github/actionlint-matcher.json` でエラー行に注釈を付ける）
-- `.github/workflows/markdownlint.yml` — Markdown の書き方チェック（ルールは `.markdownlint-cli2.jsonc`、内容は `AGENTS.md` の「Markdown の書き方」）
-- `.github/workflows/codeql.yml` — セキュリティスキャン（workflow 定義は常に、JS/TS は ソースがある場合のみ解析）
-- `.github/workflows/deploy.yml` — main への PR マージ時に GitHub Pages へデプロイ
-- `.github/workflows/pr-preview.yml` — PR ごとのプレビュー環境（`pr-<番号>/`）を gh-pages にデプロイし、URL と QR コードをコメント
-- `.github/workflows/release-drafter.yml` + `.github/release-drafter.yml` — main へのマージごとにリリースノート草案を更新（PR タイトルの Conventional Commits プレフィックスで分類）
-- `.github/workflows/pr-title.yml` — PR タイトルが Conventional Commits 形式（例: `feat: 〜`）かを検証
-- `.github/workflows/screenshot.yml` — PR スクリーンショット用 Playwright 雛形
-- `.github/dependabot.yml` — 依存関係の自動更新
-
-### 環境差異の吸収
-
-- `.editorconfig` — エディタ間のインデント／改行統一
-- `.markdownlint-cli2.jsonc` — Markdown の書き方ルール
-- `.gitattributes` — テキスト/バイナリ・改行コードの正規化
-- `.gitignore` — OS / 言語 / ビルド成果物
-- `.vscode/extensions.json`, `.vscode/settings.json` — VSCode 推奨拡張・設定
-
-### その他
-
-- `LICENSE` — MIT
+- ログイン画面（初回はユーザー名とパスワードを登録し、以降は自分だけがログインできる）
+- ダッシュボードからのタスクの追加
+- ダッシュボードとメモで追加したタスクの一覧表示（チェックで取り消し線、削除ボタンで一覧から削除）
+- 直近 3 件のメモの全文表示と、それ以降のメモのリンク一覧
+- 日付ごとのメモの作成・編集・削除（日付の初期値は今日で、変更も可能）
+- 同じ日付のメモへの連番（`#1`、`#2` …）の自動付番
+- メモごとのタスクの追加
 
 ## 使い方
 
-1. このテンプレートから新しいリポジトリを作成（GitHub の **Use this template** ボタン、または clone）。
-2. `README.md` を `AGENTS.md` の「README の構成」に沿って書き換え、`CODEOWNERS`、`LICENSE` のプロジェクト名や著作権者を書き換える。
-3. 言語/フレームワークが決まったら以下を有効化:
-   - `.github/workflows/ci.yml` は `lint` / `type-check` / `build` の npm script を実行する（`lint` / `type-check` はスクリプトがなければスキップ、`build` は必須）。テストを追加したら Test ジョブのプレースホルダーを差し替える
-   - `.github/workflows/codeql.yml` で JS/TS 以外の言語を解析する場合は detect ジョブの判定を追加
-   - `.github/workflows/deploy.yml` / `pr-preview.yml` のベースパス変数名（既定は Vite の `VITE_BASE_PATH`）と `publish_dir` を確認
-   - Vite の場合は `vite.config.ts` に `base: process.env.VITE_BASE_PATH ?? '/'` を追加する（未設定だと GitHub Pages 上でアセットが 404 になり画面が真っ白になる）
-   - `.github/workflows/screenshot.yml` は Playwright 導入後、リポジトリ変数 `ENABLE_SCREENSHOT` を `true` に設定して有効化
-   - `.github/dependabot.yml` の対応する `package-ecosystem` のコメントアウトを外す（typescript-eslint を使わない場合は typescript の `ignore` を削除）
-4. **リポジトリ作成後の手動設定**（テンプレートに含められないため `README` で案内）:
-   - `main` ブランチ保護ルールを設定（PR 必須、CI パス必須、force push 禁止）
-   - GitHub Actions の権限を `Read and write` 許可（Release Drafter / GitHub Pages デプロイ / PR プレビュー用）
-   - GitHub Pages のソースを `gh-pages` ブランチに設定（`deploy.yml` / `pr-preview.yml` を使う場合）
-   - Secret スキャン / Dependabot Alerts を有効化
+1. 初回アクセス時にユーザー名とパスワード（8 文字以上）を登録する
+2. ダッシュボードの「＋ メモを新規作成」からメモ作成画面を開く
+3. 日付とメモ本文を入力し、必要ならタスクを追加して画面上部の「保存」を押す
+4. ダッシュボードのタスク一覧でチェックを付けて完了にし、不要になったら「削除」で一覧から消す
 
-## VSCode 環境
+## データの保存とログイン
 
-VSCode をエディタとして使うワークフローを想定しています。`.vscode/extensions.json` に記載の拡張をインストールすると、Lint / Format / Spell check が即座に動きます。
+- メモとタスクは localStorage の `meeting-notes:users/{uid}/memos` と `meeting-notes:users/{uid}/tasks` に保存する。データはその端末・ブラウザ内にだけ残り、他の端末とは同期されない
+- ログイン情報は PBKDF2 でハッシュ化したパスワードを localStorage に保存し、ログイン状態は sessionStorage に保持する（タブを閉じるとログアウトされる）
+- 現在のログインは、端末を触れる他人に見られないようにするための簡易的な仕組みで、データ自体は暗号化していない。GitHub Pages の同じオリジンで動く他のアプリからは localStorage を読めるため、機密性の高い内容は記録しない
+- パスワードを忘れた場合は、ブラウザのサイトデータ（`meeting-notes:` で始まる localStorage のキー）を削除すると初回登録からやり直せる（メモとタスクも消える）
+
+## Firebase への移行
+
+データの読み書きは `src/data/repository.ts` の `Repository`、ログインは `src/auth/authService.ts` の `AuthService` で抽象化している。Firebase の準備ができたら次の手順で移行する。
+
+1. Firestore を使う `Repository` 実装と、Firebase Authentication を使う `AuthService` 実装を追加する
+2. `src/data/DataContext.tsx` と `src/auth/AuthContext.tsx` で使う実装を差し替える
+3. `firestore.rules`（`users/{uid}` 配下を本人だけが読み書きできるルール）をデプロイする
+4. 同じ日付のメモの連番は、Firestore ではトランザクションで採番する
+
+## 技術スタック
+
+- TypeScript
+- React
+- React Router（GitHub Pages で動かすため `HashRouter` を使用）
+- Vite
+- Vitest
+- GitHub Pages
+
+## 開発
+
+### 必要な環境
+
+- Node.js 22
+
+### コマンド
+
+```bash
+npm ci             # 依存関係のインストール
+npm run dev        # 開発サーバーの起動
+npm run build      # 型チェックと本番ビルド（dist/ に出力）
+npm run preview    # ビルド結果の確認
+npm run type-check # 型チェック
+npm test           # ユニットテスト
+```
+
+## ディレクトリ構成
+
+```text
+.
+├── src/
+│   ├── auth/          # ログイン処理（AuthService と React のコンテキスト）
+│   ├── components/    # ヘッダー・タスク一覧などの共通コンポーネント
+│   ├── data/          # メモとタスクの型・Repository・localStorage 実装
+│   ├── lib/           # 日付やメモの連番などの処理
+│   ├── pages/         # ログイン・ダッシュボード・メモ作成画面
+│   └── test/          # テスト用のヘルパー
+├── public/            # ファビコンなどの静的ファイル
+├── firestore.rules    # Firebase 移行後の Firestore セキュリティルール
+├── index.html         # エントリーポイントの HTML
+└── vite.config.ts     # Vite と Vitest の設定
+```
+
+## デプロイ
+
+- main への PR マージ時に GitHub Pages（<https://keigo-hisazumi.github.io/meeting-notes/>）へデプロイされる
+- PR ごとに `pr-<番号>/` 配下へプレビューがデプロイされる
+
+## 開発ルール
+
+[`AGENTS.md`](./AGENTS.md) を参照してください（開発ルールの正本）。
 
 ## ライセンス
 
-MIT
+MIT License
