@@ -37,7 +37,7 @@ function MissingConfig() {
       <section className="card">
         <h2>Firebase の設定がありません</h2>
         <p>
-          ビルド時に Firebase の設定（<code>VITE_FIREBASE_*</code>）が渡されていません。README の「Firebase
+          ビルド時に Firebase の設定（<code>VITE_FIREBASE_CONFIG</code>）が渡されていません。README の「Firebase
           の設定」を確認してください。
         </p>
       </section>

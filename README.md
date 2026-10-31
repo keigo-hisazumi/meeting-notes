@@ -37,16 +37,24 @@
 4. Authentication の「設定」→「ユーザー アクション」で、作成（登録）を無効にする（自分以外がアカウントを作れないようにする）
 5. Cloud Firestore のデータベースを作成する
 6. `firestore.rules` の内容を Firestore の「ルール」に貼り付けて公開するか、`npx firebase-tools deploy --only firestore:rules --project <プロジェクト ID>` でデプロイする
-7. GitHub のリポジトリの Settings →「Secrets and variables」→「Actions」→「Variables」に、下の表の 4 つを追加する
+7. GitHub のリポジトリの Settings →「Secrets and variables」→「Actions」→「Variables」に `FIREBASE_CONFIG` を追加し、値に `firebaseConfig` を貼り付ける（下の例のような JSON のほか、Firebase コンソールに表示されるコードをそのまま貼り付けてもよい）
 8. Google Cloud コンソールの「API とサービス」→「認証情報」で、ブラウザ用 API キーに HTTP リファラーの制限（`https://keigo-hisazumi.github.io/*` と、ローカル開発用の `http://localhost:*/*`）を付ける
 9. Actions の「Deploy to GitHub Pages」を手動実行し、設定を含めてビルドし直す
 
-| Variable | `firebaseConfig` の項目 |
-| --- | --- |
-| `FIREBASE_API_KEY` | `apiKey` |
-| `FIREBASE_AUTH_DOMAIN` | `authDomain` |
-| `FIREBASE_PROJECT_ID` | `projectId` |
-| `FIREBASE_APP_ID` | `appId` |
+`FIREBASE_CONFIG` の値の例:
+
+```json
+{
+  "apiKey": "AIza...",
+  "authDomain": "<プロジェクト ID>.firebaseapp.com",
+  "projectId": "<プロジェクト ID>",
+  "storageBucket": "<プロジェクト ID>.firebasestorage.app",
+  "messagingSenderId": "123456789012",
+  "appId": "1:123456789012:web:abcdef"
+}
+```
+
+`apiKey`・`authDomain`・`projectId`・`appId` は必須です。
 
 Firebase の設定がビルドに含まれていない場合、アプリは「Firebase の設定がありません」と表示します。
 
@@ -68,7 +76,7 @@ Firebase の設定がビルドに含まれていない場合、アプリは「Fi
 
 ### ローカルでの Firebase の設定
 
-`.env.example` を `.env.local` にコピーし、`firebaseConfig` の値を入れる（`.env.local` はコミットしない）。
+`.env.example` を `.env.local` にコピーし、`VITE_FIREBASE_CONFIG` に `firebaseConfig` を JSON で 1 行に書く（`.env.local` はコミットしない）。
 
 Firebase Emulator Suite を使う場合は、Java をインストールしたうえで次のコマンドでエミュレーターを起動し、`.env.local` の `VITE_FIREBASE_EMULATOR` を `true` にする。ユーザーはエミュレーターの Auth に作成する。
 
@@ -110,7 +118,7 @@ npm test           # ユニットテスト
 
 - main への PR マージ時に GitHub Pages（<https://keigo-hisazumi.github.io/meeting-notes/>）へデプロイされる
 - PR ごとに `pr-<番号>/` 配下へプレビューがデプロイされる
-- どちらも Firebase の設定は Actions variables（`FIREBASE_*`）からビルド時に渡す
+- どちらも Firebase の設定は Actions variables の `FIREBASE_CONFIG` からビルド時に渡す
 
 ## 開発ルール
 
