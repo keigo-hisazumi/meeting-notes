@@ -82,6 +82,8 @@ jobs:
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/pr-${{ github.event.number }}/
           VITE_APP_ENV: preview
+          # Firebase の設定（リポジトリの Actions variables の FIREBASE_CONFIG で管理する）
+          VITE_FIREBASE_CONFIG: ${{ vars.FIREBASE_CONFIG }}
           # TODO: PWA（Service Worker）を導入する場合は、プレビューで自己破棄する SW を
           # 生成するなどして本番 SW との競合やプレビュー同士のキャッシュ混在を防いでください
           # （例: VITE_DISABLE_PWA: 'true' を vite.config.ts で解釈する）

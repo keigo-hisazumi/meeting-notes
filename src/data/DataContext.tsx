@@ -1,5 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { LocalRepository } from './localRepository';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Repository } from './repository';
 import type { Memo, Task } from './types';
 
@@ -8,30 +7,35 @@ interface DataContextValue {
   memos: Memo[];
   tasks: Task[];
   loading: boolean;
+  error: string;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
 
-/** ログイン中のユーザーのメモとタスクを読み込み、変更があれば再読み込みする */
-export function DataProvider({ uid, children }: { uid: string; children: ReactNode }) {
-  const [repo] = useState<Repository>(() => new LocalRepository(uid));
-  const [memos, setMemos] = useState<Memo[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const reload = useCallback(async () => {
-    const [nextMemos, nextTasks] = await Promise.all([repo.listMemos(), repo.listTasks()]);
-    setMemos(nextMemos);
-    setTasks(nextTasks);
-    setLoading(false);
-  }, [repo]);
+/** ログイン中のユーザーのメモとタスクを購読し、変更があれば画面に反映する */
+export function DataProvider({ repo, children }: { repo: Repository; children: ReactNode }) {
+  const [memos, setMemos] = useState<Memo[] | null>(null);
+  const [tasks, setTasks] = useState<Task[] | null>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    void reload();
-    return repo.subscribe(() => void reload());
-  }, [repo, reload]);
+    const handleError = (e: Error) => setError(`データを読み込めませんでした（${e.message}）`);
+    const unsubscribeMemos = repo.watchMemos(setMemos, handleError);
+    const unsubscribeTasks = repo.watchTasks(setTasks, handleError);
+    return () => {
+      unsubscribeMemos();
+      unsubscribeTasks();
+    };
+  }, [repo]);
 
-  return <DataContext.Provider value={{ repo, memos, tasks, loading }}>{children}</DataContext.Provider>;
+  const value: DataContextValue = {
+    repo,
+    memos: memos ?? [],
+    tasks: tasks ?? [],
+    loading: memos === null || tasks === null,
+    error,
+  };
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
 
 export function useData(): DataContextValue {

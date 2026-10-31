@@ -11,8 +11,15 @@ import { nextSeq } from '../lib/memo';
 /** メモ作成・編集画面。/memos/new は新規作成、/memos/:id は既存メモの編集 */
 export function MemoEditPage() {
   const { id } = useParams();
-  const { memos, loading } = useData();
+  const { memos, loading, error } = useData();
 
+  if (error) {
+    return (
+      <p className="error page" role="alert">
+        {error}
+      </p>
+    );
+  }
   if (!id) return <MemoEditor key="new" memo={null} />;
   if (loading) return <p className="empty">読み込み中…</p>;
 
@@ -38,6 +45,7 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
   // 新規作成から保存して遷移してきた場合は保存済みの表示にする
   const [status, setStatus] = useState((location.state as { saved?: boolean } | null)?.saved ? '保存しました' : '');
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const isNew = memo === null;
   const dateChanged = memo !== null && memo.date !== date;
@@ -71,23 +79,34 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
       return;
     }
     const input = { date, body };
-    if (isNew) {
-      const created = await repo.createMemo(input);
-      for (const task of draftTasks) {
-        await repo.createTask({ title: task.title, memoId: created.id, done: task.done });
+    setSaving(true);
+    try {
+      if (isNew) {
+        const createdId = await repo.createMemo(input);
+        await Promise.all(
+          draftTasks.map((task) => repo.createTask({ title: task.title, memoId: createdId, done: task.done })),
+        );
+        navigate(`/memos/${createdId}`, { replace: true, state: { saved: true } });
+        return;
       }
-      navigate(`/memos/${created.id}`, { replace: true, state: { saved: true } });
-    } else {
       await repo.updateMemo(memo.id, input);
       setStatus('保存しました');
+    } catch {
+      setError('保存できませんでした。ネットワークの状態を確認して、もう一度お試しください');
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!memo) return;
     if (!window.confirm('このメモと、メモに紐づくタスクを削除します。よろしいですか？')) return;
-    await repo.deleteMemo(memo.id);
-    navigate('/', { replace: true });
+    try {
+      await repo.deleteMemo(memo.id);
+      navigate('/', { replace: true });
+    } catch {
+      setError('削除できませんでした。ネットワークの状態を確認して、もう一度お試しください');
+    }
   };
 
   return (
@@ -102,8 +121,8 @@ function MemoEditor({ memo }: { memo: Memo | null }) {
           <span className="save-status" aria-live="polite">
             {dirty ? (isNew ? '' : '未保存の変更があります') : status}
           </span>
-          <button type="submit" className="button button-primary" disabled={!dirty}>
-            保存
+          <button type="submit" className="button button-primary" disabled={!dirty || saving}>
+            {saving ? '保存中…' : '保存'}
           </button>
         </div>
         <div className="memo-meta">

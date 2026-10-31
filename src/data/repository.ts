@@ -1,25 +1,22 @@
 import type { Memo, MemoInput, Task, TaskInput, TaskPatch } from './types';
 
-/**
- * メモとタスクの保存先を抽象化したインターフェース。
- * 現在は localStorage 実装（LocalRepository）を使い、Firebase の準備ができたら
- * Firestore 実装に差し替える想定のため、すべて非同期 API にしている。
- */
+export type Unsubscribe = () => void;
+
+/** メモとタスクの保存先を抽象化したインターフェース（実装は FirestoreRepository） */
 export interface Repository {
-  listMemos(): Promise<Memo[]>;
-  getMemo(id: string): Promise<Memo | null>;
-  /** 同じ日付のメモがある場合は連番を付けて作成する */
-  createMemo(input: MemoInput): Promise<Memo>;
+  /** メモの一覧を購読し、変更のたびに onChange を呼ぶ */
+  watchMemos(onChange: (memos: Memo[]) => void, onError: (error: Error) => void): Unsubscribe;
+  /** タスクの一覧を購読し、変更のたびに onChange を呼ぶ */
+  watchTasks(onChange: (tasks: Task[]) => void, onError: (error: Error) => void): Unsubscribe;
+
+  /** 同じ日付のメモがある場合は連番を付けて作成し、作成したメモの ID を返す */
+  createMemo(input: MemoInput): Promise<string>;
   /** 日付を変更した場合は変更先の日付で連番を付け直す */
-  updateMemo(id: string, input: MemoInput): Promise<Memo>;
+  updateMemo(id: string, input: MemoInput): Promise<void>;
   /** メモに紐づくタスクも合わせて削除する */
   deleteMemo(id: string): Promise<void>;
 
-  listTasks(): Promise<Task[]>;
-  createTask(input: TaskInput): Promise<Task>;
-  updateTask(id: string, patch: TaskPatch): Promise<Task>;
+  createTask(input: TaskInput): Promise<void>;
+  updateTask(id: string, patch: TaskPatch): Promise<void>;
   deleteTask(id: string): Promise<void>;
-
-  /** データが変更されたときに呼ばれるリスナーを登録し、解除関数を返す */
-  subscribe(listener: () => void): () => void;
 }
