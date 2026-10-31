@@ -5,10 +5,17 @@ import { useData } from '../data/DataContext';
 import { memoLabel, memoPreview, splitRecentMemos } from '../lib/memo';
 
 export function DashboardPage() {
-  const { repo, memos, tasks, loading } = useData();
+  const { repo, memos, tasks, loading, error } = useData();
   const { recent, older } = splitRecentMemos(memos);
   const sortedTasks = [...tasks].sort((a, b) => a.createdAt - b.createdAt);
 
+  if (error) {
+    return (
+      <p className="error page" role="alert">
+        {error}
+      </p>
+    );
+  }
   if (loading) return <p className="empty">読み込み中…</p>;
 
   return (

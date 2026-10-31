@@ -10,7 +10,7 @@ export function Header() {
       </Link>
       {user && (
         <div className="header-user">
-          <span className="header-name">{user.name}</span>
+          <span className="header-name">{user.email}</span>
           <button type="button" className="button button-ghost" onClick={() => void logout()}>
             ログアウト
           </button>

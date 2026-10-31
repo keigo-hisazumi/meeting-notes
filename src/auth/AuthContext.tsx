@@ -1,38 +1,27 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-import { LocalAuthService, type AuthService, type AuthUser } from './authService';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { AuthService, AuthUser } from './authService';
 
 interface AuthContextValue {
-  user: AuthUser | null;
-  hasAccount: boolean;
-  register(name: string, password: string): Promise<void>;
-  login(name: string, password: string): Promise<void>;
+  /** undefined はログイン状態の確認中 */
+  user: AuthUser | null | undefined;
+  login(email: string, password: string): Promise<void>;
   logout(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({
-  children,
-  service = new LocalAuthService(),
-}: {
-  children: ReactNode;
-  service?: AuthService;
-}) {
-  const [authService] = useState(() => service);
-  const [user, setUser] = useState<AuthUser | null>(() => authService.currentUser());
+export function AuthProvider({ children, service }: { children: ReactNode; service: AuthService }) {
+  const [user, setUser] = useState<AuthUser | null | undefined>(undefined);
+
+  useEffect(() => service.onChange(setUser), [service]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      hasAccount: authService.hasAccount(),
-      register: async (name, password) => setUser(await authService.register(name, password)),
-      login: async (name, password) => setUser(await authService.login(name, password)),
-      logout: async () => {
-        await authService.logout();
-        setUser(null);
-      },
+      login: (email, password) => service.login(email, password),
+      logout: () => service.logout(),
     }),
-    [authService, user],
+    [service, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

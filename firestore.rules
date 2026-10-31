@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Firebase 移行後に使う Firestore のセキュリティルール。
+// Firestore のセキュリティルール。
 // データは users/{uid} の下に置き、ログインしている本人だけが読み書きできるようにする。
 service cloud.firestore {
   match /databases/{database}/documents {
