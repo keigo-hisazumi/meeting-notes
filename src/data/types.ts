@@ -11,7 +11,7 @@ export interface Memo {
   updatedAt: number;
 }
 
-/** タスク。memoId が null のものはダッシュボードから追加したタスク */
+/** タスク。memoId が null のものは以前のバージョンでダッシュボードから追加したタスク */
 export interface Task {
   id: string;
   title: string;
@@ -33,3 +33,9 @@ export interface TaskInput {
 }
 
 export type TaskPatch = Partial<Pick<Task, 'title' | 'done'>>;
+
+/** ダッシュボードに表示する、自由に書き換えられるメモ（1 ユーザーにつき 1 つ） */
+export interface DashboardNote {
+  body: string;
+  updatedAt: number;
+}

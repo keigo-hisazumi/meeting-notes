@@ -225,6 +225,20 @@ textarea {
   max-width: 380px;
 }
 
+/* ダッシュボードのメモ */
+.card-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card-heading h2,
+.card-heading .hint {
+  margin: 0;
+}
+
 /* タスク */
 .task-form {
   display: flex;

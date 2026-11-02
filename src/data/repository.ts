@@ -1,4 +1,4 @@
-import type { Memo, MemoInput, Task, TaskInput, TaskPatch } from './types';
+import type { DashboardNote, Memo, MemoInput, Task, TaskInput, TaskPatch } from './types';
 
 export type Unsubscribe = () => void;
 
@@ -19,4 +19,9 @@ export interface Repository {
   createTask(input: TaskInput): Promise<void>;
   updateTask(id: string, patch: TaskPatch): Promise<void>;
   deleteTask(id: string): Promise<void>;
+
+  /** ダッシュボードのメモを購読する。まだ保存されていない場合は null を渡す */
+  watchDashboardNote(onChange: (note: DashboardNote | null) => void, onError: (error: Error) => void): Unsubscribe;
+  /** ダッシュボードのメモの本文を保存する */
+  saveDashboardNote(body: string): Promise<void>;
 }
