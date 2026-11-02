@@ -13,10 +13,11 @@ import {
   where,
   writeBatch,
   type CollectionReference,
+  type DocumentReference,
   type Firestore,
 } from 'firebase/firestore';
 import type { Repository, Unsubscribe } from './repository';
-import type { Memo, MemoInput, Task, TaskInput, TaskPatch } from './types';
+import type { DashboardNote, Memo, MemoInput, Task, TaskInput, TaskPatch } from './types';
 
 /** 日付ごとに最後に使った連番を保持するドキュメント（users/{uid}/memoCounters/{date}） */
 interface MemoCounter {
@@ -34,6 +35,8 @@ export class FirestoreRepository implements Repository {
   private readonly memos: CollectionReference;
   private readonly tasks: CollectionReference;
   private readonly counters: CollectionReference;
+  /** ダッシュボードのメモ（users/{uid}/notes/dashboard） */
+  private readonly dashboardNote: DocumentReference;
 
   constructor(
     private readonly db: Firestore,
@@ -43,6 +46,7 @@ export class FirestoreRepository implements Repository {
     this.memos = collection(db, 'users', uid, 'memos');
     this.tasks = collection(db, 'users', uid, 'tasks');
     this.counters = collection(db, 'users', uid, 'memoCounters');
+    this.dashboardNote = doc(db, 'users', uid, 'notes', 'dashboard');
   }
 
   watchMemos(onChange: (memos: Memo[]) => void, onError: (error: Error) => void): Unsubscribe {
@@ -133,6 +137,18 @@ export class FirestoreRepository implements Repository {
 
   async deleteTask(id: string): Promise<void> {
     await deleteDoc(doc(this.tasks, id));
+  }
+
+  watchDashboardNote(onChange: (note: DashboardNote | null) => void, onError: (error: Error) => void): Unsubscribe {
+    return onSnapshot(
+      this.dashboardNote,
+      (snapshot) => onChange(snapshot.exists() ? (snapshot.data() as DashboardNote) : null),
+      onError,
+    );
+  }
+
+  async saveDashboardNote(body: string): Promise<void> {
+    await setDoc(this.dashboardNote, { body, updatedAt: this.now() } satisfies DashboardNote);
   }
 
   /**

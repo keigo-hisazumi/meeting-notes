@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { TaskForm } from '../components/TaskForm';
+import { DashboardNote } from '../components/DashboardNote';
 import { TaskList } from '../components/TaskList';
 import { useData } from '../data/DataContext';
 import { memoLabel, memoPreview, splitRecentMemos } from '../lib/memo';
@@ -26,9 +26,10 @@ export function DashboardPage() {
         </Link>
       </div>
 
+      <DashboardNote repo={repo} />
+
       <section className="card">
         <h2>タスク</h2>
-        <TaskForm onAdd={(title) => repo.createTask({ title, memoId: null }).then(() => undefined)} />
         <TaskList
           tasks={sortedTasks}
           memos={memos}
