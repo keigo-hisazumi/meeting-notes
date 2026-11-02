@@ -7,7 +7,8 @@ import { memoLabel, memoPreview, splitRecentMemos } from '../lib/memo';
 export function DashboardPage() {
   const { repo, memos, tasks, loading, error } = useData();
   const { recent, older } = splitRecentMemos(memos);
-  const sortedTasks = [...tasks].sort((a, b) => a.createdAt - b.createdAt);
+  // 完了したタスクはダッシュボードには表示しない（メモの画面では引き続き表示する）
+  const openTasks = tasks.filter((t) => !t.done).sort((a, b) => a.createdAt - b.createdAt);
 
   if (error) {
     return (
@@ -31,10 +32,9 @@ export function DashboardPage() {
       <section className="card">
         <h2>タスク</h2>
         <TaskList
-          tasks={sortedTasks}
+          tasks={openTasks}
           memos={memos}
           onToggle={(task) => void repo.updateTask(task.id, { done: !task.done })}
-          onDelete={(task) => void repo.deleteTask(task.id)}
           emptyMessage="残っているタスクはありません"
         />
       </section>

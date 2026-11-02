@@ -12,13 +12,14 @@ export interface TaskItem {
 interface Props {
   tasks: TaskItem[];
   onToggle(task: TaskItem): void;
-  onDelete(task: TaskItem): void;
+  /** 指定した場合だけ削除ボタンを表示する */
+  onDelete?(task: TaskItem): void;
   /** 指定した場合、メモから追加したタスクに元のメモへのリンクを表示する */
   memos?: Memo[];
   emptyMessage?: string;
 }
 
-/** チェックボックスと削除ボタン付きのタスク一覧。完了したタスクには取り消し線を付ける */
+/** チェックボックス（と、onDelete を指定した場合は削除ボタン）付きのタスク一覧。完了したタスクには取り消し線を付ける */
 export function TaskList({ tasks, onToggle, onDelete, memos, emptyMessage = 'タスクはありません' }: Props) {
   if (tasks.length === 0) return <p className="empty">{emptyMessage}</p>;
 
@@ -37,14 +38,16 @@ export function TaskList({ tasks, onToggle, onDelete, memos, emptyMessage = 'タ
                 {memo ? <Link to={`/memos/${memo.id}`}>{memoLabel(memo)}</Link> : 'ダッシュボード'}
               </span>
             )}
-            <button
-              type="button"
-              className="button button-danger button-small"
-              onClick={() => onDelete(task)}
-              aria-label={`「${task.title}」を削除`}
-            >
-              削除
-            </button>
+            {onDelete && (
+              <button
+                type="button"
+                className="button button-danger button-small"
+                onClick={() => onDelete(task)}
+                aria-label={`「${task.title}」を削除`}
+              >
+                削除
+              </button>
+            )}
           </li>
         );
       })}
